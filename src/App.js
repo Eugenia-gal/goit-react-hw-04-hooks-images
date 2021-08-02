@@ -34,7 +34,7 @@ export function App() {
           }}
         />
       )}
-      <Toaster />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Loader from 'react-loader-spinner';
 import PropTypes from 'prop-types';
 import ImageGalleryItem from 'Components/ImageGalleryItem';
@@ -14,104 +14,90 @@ const STATUS = {
   REJECTED: 'rejected',
 };
 
-export class ImageGallery extends Component {
-  state = {
-    currentPage: 1,
-    images: [],
-    status: STATUS.IDLE,
-    error: null,
-  };
+export function ImageGallery({ query, onSelect }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [images, setimages] = useState([]);
+  const [status, setStatus] = useState(STATUS.IDLE);
+  const [error, setError] = useState(null);
 
-  static propTypes = {
-    query: PropTypes.string,
-    onSelect: PropTypes.func,
-  };
-
-  async componentDidUpdate(prevProps, prevState) {
-    const oldQuery = prevProps.query;
-    const newQuery = this.props.query;
-    const oldPage = prevState.currentPage;
-    const newPage = this.state.currentPage;
-
-    if (oldQuery !== newQuery) {
-      this.setState({ currentPage: 1, images: [], error: null });
-      this.getImages(newQuery, newPage);
-    }
-
-    if (oldQuery === newQuery && oldPage !== newPage && newPage !== 1) {
-      this.setState({ error: null });
-      await this.getImages(newQuery, newPage);
-
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }
-
-  getImages = async (query, page) => {
-    this.setState({ status: STATUS.PENDING });
+  const getImages = async (query, page) => {
+    setStatus(STATUS.PENDING);
     try {
       const images = await fetchImages(query, page);
       if (images.length === 0) {
-        this.setState({ status: STATUS.IDLE });
+        setStatus(STATUS.IDLE);
         return toast.error(
           'Search result is not successful. Enter the correct query and try again, please.',
-          {
-            position: 'top-right',
-            duration: 3000,
-          },
         );
       }
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images],
-        status: STATUS.RESOLVED,
-      }));
+      setimages(prevState => [...prevState, ...images]);
+      setStatus(STATUS.RESOLVED);
     } catch (error) {
-      this.setState({ error: error.message, status: STATUS.REJECTED });
+      setError(error.message);
+      setStatus(STATUS.REJECTED);
       toast.error(
         'Oops! Something went wrong... Please try again. If the problem persists, contact our customer support',
-        {
-          position: 'top-right',
-          duration: 3000,
-        },
       );
     }
   };
 
-  changeCurrentPage = () => {
-    this.setState(prevState => ({ currentPage: prevState.currentPage + 1 }));
-  };
+  useEffect(() => {
+    if (query !== '') {
+      setCurrentPage(1);
+      setimages([]);
+      setError(null);
+      getImages(query, 1);
+    }
+  }, [query]);
 
-  render() {
-    const { images, status, error } = this.state;
-    const { onSelect } = this.props;
+  useEffect(() => {
+    if (query !== '' && currentPage !== 1) {
+      async function Pagination() {
+        setError(null);
+        await getImages(query, currentPage);
 
-    return (
-      <>
-        {status === STATUS.REJECTED && <h1>Error: {error}</h1>}
-        <ul className={s.ImageGallery}>
-          {images.length > 0 &&
-            images.map(image => (
-              <ImageGalleryItem
-                key={image.id}
-                src={image.webformatURL}
-                tags={image.tags}
-                largeImage={image.largeImageURL}
-                onClick={onSelect}
-              />
-            ))}
-        </ul>
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+      Pagination();
+    }
+  }, [currentPage, query]);
 
-        {status === STATUS.PENDING && (
-          <Loader type="ThreeDots" color="#3f51b5" height={100} width={100} />
-        )}
-        {status === STATUS.RESOLVED && images.length > 0 && (
-          <Button onClick={this.changeCurrentPage} />
-        )}
-      </>
-    );
-  }
+  return (
+    <>
+      {status === STATUS.REJECTED && <h1>Error: {error}</h1>}
+      <ul className={s.ImageGallery}>
+        {images.length > 0 &&
+          images.map(image => (
+            <ImageGalleryItem
+              key={image.id}
+              src={image.webformatURL}
+              tags={image.tags}
+              largeImage={image.largeImageURL}
+              onClick={onSelect}
+            />
+          ))}
+      </ul>
+
+      {status === STATUS.PENDING && (
+        <Loader type="ThreeDots" color="#3f51b5" height={100} width={100} />
+      )}
+      {status === STATUS.RESOLVED && images.length > 0 && (
+        <Button
+          onClick={() => {
+            setCurrentPage(prevState => prevState + 1);
+          }}
+        />
+      )}
+    </>
+  );
 }
+
+ImageGallery.propTypes = {
+  query: PropTypes.string,
+  onSelect: PropTypes.func,
+};
 
 export default ImageGallery;
