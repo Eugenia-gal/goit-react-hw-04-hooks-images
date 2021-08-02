@@ -14,7 +14,7 @@ const STATUS = {
   REJECTED: 'rejected',
 };
 
-export function ImageGallery({ query, onSelect }) {
+function ImageGallery({ query, onSelect }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [images, setimages] = useState([]);
   const [status, setStatus] = useState(STATUS.IDLE);

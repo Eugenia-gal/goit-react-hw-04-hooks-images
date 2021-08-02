@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import s from './Modal.module.scss';
 
-export function Modal({ onClose, src, tags }) {
+function Modal({ onClose, src, tags }) {
   const closeModal = e => {
     if (e.target === e.currentTarget) {
       onClose();

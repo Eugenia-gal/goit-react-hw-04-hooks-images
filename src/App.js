@@ -6,7 +6,7 @@ import Modal from 'Components/Modal/Modal';
 import './App.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
-export function App() {
+function App() {
   const [searchQuery, setsearchQuery] = useState('');
   const [selectedImage, setselectedImage] = useState(null);
   const [selectedImageTags, setselectedImageTags] = useState(null);
