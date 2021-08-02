@@ -26,6 +26,7 @@ export function ImageGallery({ query, onSelect }) {
       const images = await fetchImages(query, page);
       if (images.length === 0) {
         setStatus(STATUS.IDLE);
+        setCurrentPage(1);
         return toast.error(
           'Search result is not successful. Enter the correct query and try again, please.',
         );
