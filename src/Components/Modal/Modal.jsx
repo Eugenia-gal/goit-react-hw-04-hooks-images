@@ -1,48 +1,45 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import s from './Modal.module.scss';
 
-class Modal extends Component {
-  static propTypes = {
-    src: PropTypes.string,
-    tags: PropTypes.string,
-    onClose: PropTypes.func,
-  };
-
-  componentDidMount() {
-    document.addEventListener('keydown', this.escFunction);
-  }
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.escFunction);
-  }
-
-  escFunction = e => {
-    if (e.keyCode === 27) {
-      this.props.onClose();
-    }
-  };
-
-  closeModal = e => {
+export function Modal({ onClose, src, tags }) {
+  const closeModal = e => {
     if (e.target === e.currentTarget) {
-      this.props.onClose();
+      onClose();
     }
   };
+  useEffect(() => {
+    const escFunction = e => {
+      if (e.keyCode === 27) {
+        onClose();
+      }
+    };
 
-  render() {
-    const { src, tags } = this.props;
-    return (
-      <div
-        className={s.Overlay}
-        onClick={e => {
-          this.closeModal(e);
-        }}
-      >
-        <div className={s.Modal}>
-          <img src={src} alt={tags} />
-        </div>
+    document.addEventListener('keydown', escFunction);
+
+    return function cleanup() {
+      document.removeEventListener('keydown', escFunction);
+    };
+  });
+
+  return (
+    <div
+      className={s.Overlay}
+      onClick={e => {
+        closeModal(e);
+      }}
+    >
+      <div className={s.Modal}>
+        <img src={src} alt={tags} />
       </div>
-    );
-  }
+    </div>
+  );
 }
+
+Modal.propTypes = {
+  src: PropTypes.string,
+  tags: PropTypes.string,
+  onClose: PropTypes.func,
+};
 
 export default Modal;
