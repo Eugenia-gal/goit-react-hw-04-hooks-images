@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Loader from 'react-loader-spinner';
 import PropTypes from 'prop-types';
+import usePrevious from 'Components/hooks/usePrevious';
 import ImageGalleryItem from 'Components/ImageGalleryItem';
 import Button from 'Components/Button';
 import fetchImages from 'Services/getImages';
@@ -14,11 +15,12 @@ const STATUS = {
   REJECTED: 'rejected',
 };
 
-function ImageGallery({ query, onSelect }) {
+export function ImageGallery({ query, onSelect }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [images, setimages] = useState([]);
   const [status, setStatus] = useState(STATUS.IDLE);
   const [error, setError] = useState(null);
+  const prevQuery = usePrevious(query);
 
   const getImages = async (query, page) => {
     setStatus(STATUS.PENDING);
@@ -52,7 +54,8 @@ function ImageGallery({ query, onSelect }) {
   }, [query]);
 
   useEffect(() => {
-    if (query !== '' && currentPage !== 1) {
+    if (prevQuery === query && currentPage !== 1) {
+      console.log('pagination');
       async function Pagination() {
         setError(null);
         await getImages(query, currentPage);
@@ -64,7 +67,7 @@ function ImageGallery({ query, onSelect }) {
       }
       Pagination();
     }
-  }, [currentPage, query]);
+  }, [currentPage, prevQuery, query]);
 
   return (
     <>
