@@ -18,6 +18,7 @@ export function SearchBar({ onSubmit }) {
     onSubmit(searchQuery);
     setSearchQuery('');
   };
+
   return (
     <div className={s.wrapper}>
       <form className={s.form} onSubmit={handleSubmit}>
